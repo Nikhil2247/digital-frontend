@@ -13,23 +13,29 @@ import {
   Tag,
   Image,
   Tooltip,
-  Select, // Import Select
+  Select,
+  Popconfirm, // Import Popconfirm for delete confirmation
 } from "antd";
-import { PlusOutlined, DownloadOutlined, QrcodeOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  DownloadOutlined,
+  QrcodeOutlined,
+  DeleteOutlined, // Import DeleteOutlined icon
+} from "@ant-design/icons";
 
 const { Title } = Typography;
-const { Option } = Select; // Destructure Option from Select
+const { Option } = Select;
 
 const PRIMARY_COLOR = "#1eaedb";
 
 const Tables = () => {
   const [tables, setTables] = useState([]);
-  const [events, setEvents] = useState([]); // State to store events
+  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
 
-  const primaryColor = "#1EAEDB"; // Define primary color (already defined as PRIMARY_COLOR, but kept for consistency)
+  const primaryColor = "#1EAEDB";
 
   const fetchTables = async () => {
     setLoading(true);
@@ -45,8 +51,6 @@ const Tables = () => {
 
   const fetchEvents = async () => {
     try {
-      // Assuming your events endpoint is something like '/events'
-      // You might need to adjust this URL based on your backend
       const res = await axios.get("/events");
       setEvents(res.data);
     } catch (err) {
@@ -61,9 +65,19 @@ const Tables = () => {
       message.success("Table added successfully!");
       form.resetFields();
       setIsModalOpen(false);
-      fetchTables(); // Re-fetch tables to show the new one
+      fetchTables();
     } catch (err) {
       message.error("Failed to add table.");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`/tables/${id}`);
+      message.success("Table deleted successfully!");
+      fetchTables(); // Re-fetch tables to update the list
+    } catch (err) {
+      message.error("Failed to delete table.");
     }
   };
 
@@ -101,7 +115,11 @@ const Tables = () => {
       render: (qrCode, record) =>
         qrCode ? (
           <Space>
-            <Image src={qrCode} alt={`QR Code for Table ${record.number}`} width={60} />
+            <Image
+              src={qrCode}
+              alt={`QR Code for Table ${record.number}`}
+              width={60}
+            />
             <Tooltip title="Download QR Code">
               <Button
                 icon={<DownloadOutlined />}
@@ -114,29 +132,31 @@ const Tables = () => {
           <Tag color="default">No QR Code</Tag>
         ),
     },
-    // Orders column commented out as per your provided code
-    // {
-    //   title: "Orders",
-    //   dataIndex: "orders",
-    //   key: "orders",
-    //   render: (orders) =>
-    //     orders && orders.length ? (
-    //       <Space direction="vertical">
-    //         {orders.map((order) => (
-    //           <Tag key={order.id} color={order.status === "READY" ? "green" : "orange"}>
-    //             {order.status}
-    //           </Tag>
-    //         ))}
-    //       </Space>
-    //     ) : (
-    //       <Tag color="default">No Orders</Tag>
-    //     ),
-    // },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => (
+        <Popconfirm
+          title="Are you sure you want to delete this table?"
+          onConfirm={() => handleDelete(record.id)}
+          okText="Yes"
+          cancelText="No"
+        >
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            style={{ borderColor: "#ff4d4f", color: "#ff4d4f" }}
+          >
+            Delete
+          </Button>
+        </Popconfirm>
+      ),
+    },
   ];
 
   useEffect(() => {
     fetchTables();
-    fetchEvents(); // Fetch events when the component mounts
+    fetchEvents();
   }, []);
 
   return (
@@ -155,7 +175,9 @@ const Tables = () => {
         }}
       >
         <Title level={3} style={{ margin: 0, color: "#333" }}>
-          <QrcodeOutlined style={{ marginRight: "10px", color: primaryColor }} />
+          <QrcodeOutlined
+            style={{ marginRight: "10px", color: primaryColor }}
+          />
           Table Management
         </Title>
         <Button
@@ -174,6 +196,7 @@ const Tables = () => {
         rowKey="id"
         loading={loading}
         pagination={{ pageSize: 7, showSizeChanger: false }}
+        scroll={{ x: "max-content" }}
         style={{
           background: "#fff",
           borderRadius: "8px",
@@ -195,18 +218,27 @@ const Tables = () => {
         footer={null}
         destroyOnClose
       >
-        <Form form={form} layout="vertical" onFinish={handleAdd} style={{ marginTop: "20px" }}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleAdd}
+          style={{ marginTop: "20px" }}
+        >
           <Form.Item
             label={<span style={{ color: primaryColor }}>Table Number</span>}
             name="number"
             rules={[{ required: true, message: "Please enter table number" }]}
           >
-            <InputNumber min={1} style={{ width: "100%" }} placeholder="e.g., 101" />
+            <InputNumber
+              min={1}
+              style={{ width: "100%" }}
+              placeholder="e.g., 101"
+            />
           </Form.Item>
 
           <Form.Item
             label={<span style={{ color: primaryColor }}>Select Event</span>}
-            name="eventId" // This will store the selected event's ID
+            name="eventId"
             rules={[{ required: true, message: "Please select an event" }]}
           >
             <Select placeholder="Select an event for this table">
@@ -223,7 +255,11 @@ const Tables = () => {
               type="primary"
               htmlType="submit"
               block
-              style={{ backgroundColor: primaryColor, borderColor: primaryColor, marginTop: "16px" }}
+              style={{
+                backgroundColor: primaryColor,
+                borderColor: primaryColor,
+                marginTop: "16px",
+              }}
             >
               Add Table
             </Button>
