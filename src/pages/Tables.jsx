@@ -47,7 +47,7 @@ const Tables = () => {
     try {
       // Assuming your events endpoint is something like '/events'
       // You might need to adjust this URL based on your backend
-      const res = await axios.get("http://localhost:3000/events");
+      const res = await axios.get("/events");
       setEvents(res.data);
     } catch (err) {
       console.error("Failed to fetch events:", err);
@@ -57,7 +57,7 @@ const Tables = () => {
 
   const handleAdd = async (values) => {
     try {
-      await axios.post("http://localhost:3000/tables", values);
+      await axios.post("/tables", values);
       message.success("Table added successfully!");
       form.resetFields();
       setIsModalOpen(false);

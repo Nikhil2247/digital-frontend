@@ -26,6 +26,7 @@ import HomePageRouter from "./pages/HomePageRouter"; // Import HomePageRouter
 import SignupPage from "./pages/SignupPage";
 import EventOrderPage from "./pages/EventOrderPage";
 import Navbar from "./components/Navbar";
+import UserRoleManagement from "./components/UserRoleManagement";
 
 // --- Enhanced PrivateRoute ---
 function PrivateRoute({ children, roles }) {
@@ -119,6 +120,14 @@ export default function App() {
             element={
               <PrivateRoute roles={["ADMIN"]}>
                 <AdminDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/roles"
+            element={
+              <PrivateRoute roles={["ADMIN"]}>
+                <UserRoleManagement />
               </PrivateRoute>
             }
           />

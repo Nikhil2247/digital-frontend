@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: 'https://backend.omnicassion.com/', // your NestJS base
+  baseURL: 'https://backend.omnicassion.com', // your NestJS base
 });
 
 API.interceptors.request.use((req) => {
